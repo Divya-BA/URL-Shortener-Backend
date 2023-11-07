@@ -1,11 +1,10 @@
 const router = require("express").Router();
 const { User, validate } = require("../models/user");
-const Token= require("../models/token");
+const Token = require("../models/token");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const { sendEmail } = require("../utils/sendEmail");
 const { default: mongoose } = require("mongoose");
-
 
 router.post("/", async (req, res) => {
   try {
@@ -40,31 +39,35 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/:id/verify/:token/", async (req, res) => {
+
+router.get("/:id/verify/:token", async (req, res) => {
   try {
-    console.log(req.params.id)
-    console.log(req.params.token)
-    const userId =new mongoose.Types.ObjectId(req.params.id);
+    const userId = new mongoose.Types.ObjectId(req.params.id);
+
     const user = await User.findOne({ _id: userId });
 
-    // const user = await User.findOne({ _id: req.params.id });
-    if (!user) return res.status(400).send({ message: "Invalid link" });
+    if (!user) {
+      return res.status(400).send({ message: "Invalid user" });
+    }
 
     const token = await Token.findOne({
       userId: user._id,
-      // token: req.params.token,
+      token: req.params.token,
     });
-    if (!token) return res.status(400).send({ message: "Invalid link" });
 
-    // await User.updateOne({ _id: user._id, verified: true });
-    // await token.remove();
+    if (!token) {
+      return res.status(400).send({ message: "Invalid token" });
+    }
+
     user.verified = true;
     await user.save();
-await token.deleteOne();
+    // await token.deleteOne();
 
     res.status(200).send({ message: "Email verified successfully" });
+    console.log("Email verified successfully");
+
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).send({ message: "Internal Server Error" });
   }
 });

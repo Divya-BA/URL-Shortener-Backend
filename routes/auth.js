@@ -6,7 +6,6 @@ const sendEmail = require("../utils/sendEmail");
 const bcrypt = require("bcrypt");
 const Joi = require("joi");
 
-
 router.post("/", async (req, res) => {
   try {
     const { error } = validate(req.body);
@@ -17,10 +16,7 @@ router.post("/", async (req, res) => {
     if (!user)
       return res.status(401).send({ message: "Invalid Email or Password" });
 
-    const validPassword = await bcrypt.compareSync(
-      req.body.password,
-      user.password
-    );
+    const validPassword = await bcrypt.compare(req.body.password, user.password);
     if (!validPassword)
       return res.status(401).send({ message: "Invalid Email or Password" });
 
@@ -33,6 +29,7 @@ router.post("/", async (req, res) => {
         }).save();
         const url = `${process.env.FRONT_END_URL}/users/${user._id}/verify/${token.token}`;
         await sendEmail(user.email, "Verify Email", url);
+        console.log("Token created and email sent.");
       }
 
       return res
@@ -41,9 +38,9 @@ router.post("/", async (req, res) => {
     }
 
     const token = user.generateAuthToken();
-    res.status(200).send({ data: token,userId :user._id, message: "logged in successfully" });
+    res.status(200).send({ data: token, userId: user._id, message: "logged in successfully" });
   } catch (error) {
-	console.log(error)
+    console.log(error);
     res.status(500).send({ message: "Internal Server Error" });
   }
 });
