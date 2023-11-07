@@ -64,7 +64,7 @@ router.get("/:id/verify/:token", async (req, res) => {
     setTimeout(async () => {
       await token.deleteOne();
       console.log("Token valid only for 5 seconds");
-    }, 5000);
+    }, 10000);
 
     res.status(200).send({ message: "Email verified successfully" });
     console.log("Email verified successfully");
